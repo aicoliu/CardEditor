@@ -35,8 +35,8 @@
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">File <b class="caret"></b></a>
                 <ul class="dropdown-menu">
                 <li id='menu-save-as'><a href="#save-dialog" data-toggle="modal">Save As</a></li>
-                <li id='menu-save'><a href="#" onclick='save();'>Save</a></li>
-                <li><a href="#" onclick='load();'>Load</a></li>
+                <li id='menu-save'><a href="#" onclick='save_as($("#filename").val());'>Save</a></li>
+                <li><a href="#load-dialog" data-toggle="modal">Load</a></li>
                 <li class="divider"></li>
                 <li><a href="#" onclick='clearForm();'>Clear</a></li>
                 </ul>
@@ -107,7 +107,23 @@
           <a href="#" class="btn" data-dismiss="modal">Cancel</a>
           <a href="#" class="btn btn-primary" data-dismiss="modal" onclick="save_as($('#save-dir').val() + '/' + $('#save-file').val());">Save</a>
         </div>
-      </div>
+      </div> <!-- /save -->
+      
+      <div class="modal fade" id="load-dialog">
+        <div class="modal-header">
+          <a class="close" data-dismiss="modal">×</a>
+          <h3>Load <code>.card</code> file</h3>
+        </div>
+        <div class="modal-body">
+          <p><form class="form-inline">
+            <input class="input-file" id="load-file" type="file">
+          </form></p>
+        </div>
+        <div class="modal-footer">
+          <a href="#" class="btn" data-dismiss="modal">Cancel</a>
+          <a href="#" class="btn btn-primary" data-dismiss="modal" onclick="load($('#load-file').val());">Open</a>
+        </div>
+      </div> <!-- /load -->
 
     <!-- Le javascript
     ================================================== -->

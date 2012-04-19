@@ -2,6 +2,7 @@ require 'HTTPHeaders'
 require 'net/http'
 require 'CGI'
 require 'nokogiri'
+require 'json'
 
 # The EventMachine server for the Card Editor backend
 module EditorServer
@@ -23,6 +24,7 @@ module EditorServer
 		STDERR.puts ""
 	end
 
+	# Respond to missing methods with a sort-of appropriate HTTP response code
 	def error(message)
 		response = HTTPMethodNotAllowed.new
 		response.content = message
@@ -31,9 +33,8 @@ module EditorServer
 		STDERR.puts response
 	end
 
-	def saveas(body)
-		form = CGI::parse(body)
-
+	# Utility method for actually saving files
+	def save_file(form)
 		form["filename"][0] += ".card" if not form["filename"][0] =~ /\.card$/
 
 		builder = Nokogiri::XML::Builder.new do |xml|
@@ -59,7 +60,7 @@ module EditorServer
 					end
 
 					# Scripts
-					form.keys.reject { |x| not x =~ /^on[A-Z]/ }.each do |script|
+					form.keys.reject { |x| not (x =~ /^on[A-Z]/ or x == "requires") }.each do |script|
 						xml.send(script) {
 							xml.cdata(form[script][0])
 						} if form[script][0].size > 0
@@ -68,13 +69,77 @@ module EditorServer
 			}
 		end
 
-		response = HTTPOK.new
-		response["Content-type"] = "text/xml"
-		response.content = form["filename"][0] + " saved successfully!"
-
-		self.send_data(response.to_s)
 		fout = File.open(File.join("..","cards",form["filename"][0].split("/")),'w')
 		fout.puts builder.to_xml
 		fout.close
+	end
+
+	# Save/Save As entry point
+	def save(body)
+		# Parse POST data into hash
+		form = CGI::parse(body)
+
+		# Save the file
+		save_file(form)
+
+		# Send HTTP response
+		response = HTTPOK.new
+		response["Content-type"] = "text/plain"
+		response.content = form["filename"][0] + " saved successfully!"
+		self.send_data(response.to_s)
+		STDERR.puts response.to_s
+	end
+
+	# Load entry point
+	def load(body)
+		# Parse POST data
+		form = CGI::parse(body)
+
+		# Idiotic HACK to get a useable filepath
+		if not form["filename"][0] =~ /([a-zA-Z0-0\_\.]+)$/
+			error("Can't parse filename \"#{form["filename"][0]}\"")
+			return
+		end
+
+		filename = $1
+		form["filename"][0] = Dir.glob(File.join("..","cards","*",filename))[0]
+
+		# Load the file
+		xml = Nokogiri::XML(open(File.join("..","cards",form["filename"][0].split("/"))))
+		
+		json = {}
+		# Filename. Again.
+		json["filename"] = form["filename"][0].gsub(/#{File.join("..","cards")}\/?/,"")
+
+		# Metadata
+		json["title"] = xml.css("title")[0].content
+		icon = xml.css("icon")[0]
+		json["icon"] = {"atlas" => icon['atlas'], "key" => icon['key']}
+		image = xml.css("image")[0]
+		json["image"] = {"atlas" => image['atlas'], "key" => image['key']}
+		json["text"] = xml.css("text")[0].content
+
+		# Tags
+		tags = []
+		xml.xpath("//tags/*").each do |tagnode|
+			if tagnode.name =~ /^on[A-Z]/ or tagnode.name =~ /^requires$/
+				# Scripts
+				json[tagnode.name] = tagnode.content
+			else 
+				# Tags
+				tag = {"name" => tagnode.name}
+				tag["attributes"] = tagnode.attributes if tagnode.attributes.size > 0
+				tags.push(tag)
+			end
+		end
+		json["tags"] = tags
+
+		# Prepare HTTP response
+		response = HTTPOK.new
+		response["Content-type"] = "application/json"
+		response.content = json.to_json
+
+		# Send HTTP response
+		self.send_data(response.to_s)
 	end
 end
