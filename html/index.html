@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Card Editor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Blazing Griffin">
+
+    <!-- Le styles -->
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="css/overrides.css">
+    <link rel="stylesheet" type="text/css" href="css/codemirror.css">
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">Card Editor</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">File <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                <li id='menu-save-as'><a href="#save-dialog" data-toggle="modal">Save As</a></li>
+                <li id='menu-save'><a href="#" onclick='save();'>Save</a></li>
+                <li><a href="#" onclick='load();'>Load</a></li>
+                <li class="divider"></li>
+                <li><a href="#" onclick='clearForm();'>Clear</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="span11" id="log">
+        </div>
+      </div>
+      <form id='data' class='form-inline'>
+      <input type='hidden' name='filename' value='' id='filename' />
+      <div class="row">
+        <div class="span11">
+          <a name="metadata" onclick="toggleHide('metadata')"><h2>Metadata <small>Information that descibes the card, like the title or icon.</small></h2></a>
+        </div>
+      </div> <!-- /label -->
+      <div id="metadata"></div>
+      
+      <div class="row">
+        <div class="span11">
+          <a name="tags" onclick="toggleHide('tags')"><h2>Tags <small>Attributes that indicate the card's function, like resource production or being-a-ship.</small></h2></a>
+        </div>
+      </div> <!-- /label -->
+      <div id="tags"></div>
+      <div class="row"><div class="span8 offset3">
+        <a class="btn btn-primary" href="#" onclick="addElementOfType('tag','tags'); return false;"><i class="icon-plus icon-white"></i> Add Tag</a>
+      </div></div>
+      
+      <div class="row">
+        <div class="span11">
+          <a name="scripts" onclick="toggleHide('scripts')"><h2>Scripts <small>Lua fragments that run in response to events, like a new turn or a played card.</small></h2></a>
+        </div>
+      </div> <!-- /label -->
+      <div id="scripts"></div> <!-- /scripts -->
+      
+      </form>
+      </div> <!-- /container -->
+      
+      <!-- Modals -->
+      <div class="modal fade" id="save-dialog">
+        <div class="modal-header">
+          <a class="close" data-dismiss="modal">×</a>
+          <h3>Save As</h3>
+        </div>
+        <div class="modal-body">
+          <p><form class="form-inline">
+            <select id="save-dir" class="span2">
+              <option>misc</option>
+              <option>minerals</option>
+              <option>planets</option>
+              <option>ships</option>
+              <option>slots</option>
+              <option>stars</option>
+              <option>structures</option>
+            </select>
+            <div class="input-append">
+              <input class="span2" id="save-file" size="16" type="text"><span class="add-on">.card</span>
+            </div>
+          </form></p>
+        </div>
+        <div class="modal-footer">
+          <a href="#" class="btn" data-dismiss="modal">Cancel</a>
+          <a href="#" class="btn btn-primary" data-dismiss="modal" onclick="save_as($('#save-dir').val() + '/' + $('#save-file').val());">Save</a>
+        </div>
+      </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap-transition.js"></script>
+    <script src="js/bootstrap-alert.js"></script>
+    <script src="js/bootstrap-modal.js"></script>
+    <script src="js/bootstrap-dropdown.js"></script>
+    <script src="js/bootstrap-scrollspy.js"></script>
+    <script src="js/bootstrap-tab.js"></script>
+    <script src="js/bootstrap-tooltip.js"></script>
+    <script src="js/bootstrap-popover.js"></script>
+    <script src="js/bootstrap-button.js"></script>
+    <script src="js/bootstrap-collapse.js"></script>
+    <script src="js/bootstrap-carousel.js"></script>
+    <script src="js/bootstrap-typeahead.js"></script>
+    <script src="js/init.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/codemirror.js"></script>
+    <script src="js/lua.js"></script>
+  </body>
+</html>
